@@ -3,14 +3,22 @@ import p5 from "p5";
 export const range = (to: number, from: number = 0): number[] =>
   Array.from(Array(to - from)).map((_, i) => i + from);
 
+export const slideArray = <T>(values: T[], amount: number): T[] =>
+  [].concat(values.slice(amount)).concat(values.slice(0, amount));
+
+export const sineValues = (size: number, amplitude: number = 1) =>
+  range(size).map((i) => amplitude * Math.sin((i / size) * Math.PI * 2));
+
 export const withRepeatRect = (
   s: p5,
   size: p5.Vector,
+  spread: p5.Vector,
   renderer: (position: p5.Vector) => void
 ) => {
-  for (const coordY of range(Math.ceil(s.height / size.y))) {
-    for (const coordX of range(Math.ceil(s.width / size.x))) {
+  for (const coordY of range(Math.ceil(s.height / size.y) + 2 * spread.y)) {
+    for (const coordX of range(Math.ceil(s.width / size.x) + 2 * spread.x)) {
       const position = s.createVector(coordX, coordY);
+      s.translate(-spread.x * size.x, -spread.y * size.y);
       s.translate(position.x * size.x, position.y * size.y);
       renderer(position);
       s.resetMatrix();
