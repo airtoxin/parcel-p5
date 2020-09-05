@@ -2,28 +2,19 @@ import download from "downloadjs";
 
 export class CanvasRecorder {
   private recorder: MediaRecorder;
-  constructor(private canvas: HTMLCanvasElement) {
+  constructor(
+    private canvas: HTMLCanvasElement,
+    private bitPerSecond: number = 25000000
+  ) {
     const stream = canvas.captureStream();
-    this.recorder = new MediaRecorder(stream);
+    this.recorder = new MediaRecorder(stream, {
+      mimeType: "video/webm",
+      videoBitsPerSecond: bitPerSecond,
+    });
 
-    const chunks: Blob[] = [];
-
-    const handleDataAvailable = (event: BlobEvent) => {
-      if (event.data.size) {
-        chunks.push(event.data.slice());
-      }
-    };
-    const handleStop = () => {
-      if (chunks.length === 0) return;
-      const webmBlob = new Blob(chunks);
-      download(webmBlob, `${Math.random().toFixed(5)}.webm`, "video/webm");
-
-      this.recorder.removeEventListener("dataavailable", handleDataAvailable);
-      this.recorder.removeEventListener("stop", handleStop);
-    };
-
-    this.recorder.addEventListener("dataavailable", handleDataAvailable);
-    this.recorder.addEventListener("stop", handleStop);
+    this.recorder.addEventListener("dataavailable", (event: BlobEvent) => {
+      download(event.data, `${Math.random().toFixed(5)}.webm`, "video/webm");
+    });
   }
 
   start() {
